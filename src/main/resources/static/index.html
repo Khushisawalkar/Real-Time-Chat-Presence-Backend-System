@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Realtime Chat</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+
+    <style>
+
+        /* Solarized Light */
+        :root{
+            --bg:#fdf6e3;
+            --panel:#eee8d5;
+            --text:#657b83;
+            --accent:#268bd2;
+            --bubble:#e8e2d9;
+        }
+
+        /* Solarized Dark */
+
+        .dark{
+            --bg:#002b36;
+            --panel:#073642;
+            --text:#93a1a1;
+            --accent:#b58900;
+            --bubble:#073642;
+        }
+
+        body{
+            margin:0;
+            font-family:system-ui, sans-serif;
+            background:var(--bg);
+            color:var(--text);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height:100vh;
+            transition:0.3s;
+        }
+
+        .chat{
+            width:420px;
+            background:var(--panel);
+            border-radius:12px;
+            padding:20px;
+            box-shadow:0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .header{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:12px;
+        }
+
+        .messages{
+            height:260px;
+            overflow-y:auto;
+            background:var(--bg);
+            padding:10px;
+            border-radius:8px;
+            margin-bottom:10px;
+        }
+
+        .message{
+            padding:8px 12px;
+            margin:6px 0;
+            background:var(--bubble);
+            border-radius:10px;
+            max-width:75%;
+        }
+
+        input{
+            width:100%;
+            padding:8px;
+            margin:4px 0;
+            border-radius:6px;
+            border:none;
+            outline:none;
+        }
+
+        .controls{
+            display:flex;
+            gap:8px;
+            margin-top:6px;
+        }
+
+        button{
+            background:var(--accent);
+            border:none;
+            color:white;
+            padding:8px 12px;
+            border-radius:6px;
+            cursor:pointer;
+        }
+
+        .theme{
+            background:none;
+            border:1px solid var(--text);
+            color:var(--text);
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="chat">
+
+    <div class="header">
+        <h3>Realtime Chat</h3>
+        <button class="theme" onclick="toggleTheme()">Toggle</button>
+    </div>
+
+    <div id="messages" class="messages"></div>
+
+    <input id="sender" placeholder="Your name">
+
+    <input id="receiver" placeholder="Receiver">
+
+    <input id="messageInput" placeholder="Type message">
+
+    <div class="controls">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+</div>
+
+<script>
+    let stompClient = null;
+
+    function toggleTheme(){
+        document.body.classList.toggle("dark")
+    }
+
+    function connect(){
+
+        const socket = new SockJS('/chat')
+
+        stompClient = Stomp.over(socket)
+
+        stompClient.connect({}, function(){
+
+            stompClient.subscribe('/topic/messages', function(message){
+
+                showMessage(JSON.parse(message.body))
+
+            })
+
+        })
+
+    }
+
+    function showMessage(message){
+
+        const box = document.getElementById("messages")
+
+        const msg = document.createElement("div")
+
+        msg.className = "message"
+
+        msg.innerHTML = "<b>"+message.sender+"</b>: "+message.content
+
+        box.appendChild(msg)
+
+        box.scrollTop = box.scrollHeight
+
+    }
+
+    function sendMessage(){
+
+        const sender = document.getElementById("sender").value
+        const receiver = document.getElementById("receiver").value
+        const content = document.getElementById("messageInput").value
+
+        stompClient.send("/app/send",{},JSON.stringify({
+
+            sender: sender,
+            receiver: receiver,
+            content: content,
+            timestamp: new Date().toISOString(),
+            status: "SENT"
+
+        }))
+
+        document.getElementById("messageInput").value = ""
+
+    }
+
+    connect()
+</script>
+
+</body>
+
+</html>
