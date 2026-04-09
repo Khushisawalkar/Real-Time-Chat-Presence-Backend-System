@@ -194,18 +194,6 @@ http://localhost:8080
 B.Tech — Electronics & Telecommunications Engineering
 Minor in Information Technology
 
-Technical interests:
-
-• Backend Systems
-• Real-Time Communication Architectures
-• Signal Processing
-• Embedded Systems
-
-Projects:
-
-• Arduino MP3 Player
-• Occupancy-Dependent Domestic Power Conservation System
-
 ---
 
 # 📜 License
