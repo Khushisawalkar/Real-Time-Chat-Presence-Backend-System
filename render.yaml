@@ -1,0 +1,39 @@
+databases:
+  - name: serenchat-db
+    databaseName: serenchat
+    user: serenchat_user
+    plan: free
+    region: oregon
+
+services:
+  - type: web
+    name: serenchat-backend
+    env: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: serenchat-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: serenchat-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: serenchat-db
+          property: database
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: serenchat-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: serenchat-db
+          property: password
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+      - key: SPRING_JPA_DATABASE_PLATFORM
+        value: org.hibernate.dialect.PostgreSQLDialect
